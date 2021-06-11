@@ -7,7 +7,8 @@ from pandas import DataFrame
 
 import talib.abstract as ta
 import freqtrade.vendor.qtpylib.indicators as qtpylib
-
+from freqtrade.strategy.hyper import CategoricalParameter, IntParameter
+from functools import reduce
 
 class Quickie(IStrategy):
     """
@@ -34,44 +35,56 @@ class Quickie(IStrategy):
     # Optimal timeframe for the strategy
     timeframe = '5m'
 
+    buy_bbband=CategoricalParameter(['upper','lower','mid'],default='lower',space='buy')
+    sell_bbband=CategoricalParameter(['upper','lower','mid'],default='lower',space='sell')
+    buy_bbstd=IntParameter(1,4, default=2,space='buy')
+    sell_bbstd=IntParameter(1,4, default=2,space='sell')
+    buy_adx_value=IntParameter(20,100, default=30,space='buy')
+    sell_adx_value=IntParameter(20,100, default=70,space='sell')
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        macd = ta.MACD(dataframe)
-        dataframe['macd'] = macd['macd']
-        dataframe['macdsignal'] = macd['macdsignal']
-        dataframe['macdhist'] = macd['macdhist']
+        # macd = ta.MACD(dataframe)
+        # dataframe['macd'] = macd['macd']
+        # dataframe['macdsignal'] = macd['macdsignal']
+        # dataframe['macdhist'] = macd['macdhist']
 
         dataframe['tema'] = ta.TEMA(dataframe, timeperiod=9)
         dataframe['sma_200'] = ta.SMA(dataframe, timeperiod=200)
-        dataframe['sma_50'] = ta.SMA(dataframe, timeperiod=50)
+        # dataframe['sma_50'] = ta.SMA(dataframe, timeperiod=50)
 
         dataframe['adx'] = ta.ADX(dataframe)
 
         # required for graphing
-        bollinger = qtpylib.bollinger_bands(dataframe['close'], window=20, stds=2)
-        dataframe['bb_lowerband'] = bollinger['lower']
-        dataframe['bb_middleband'] = bollinger['mid']
-        dataframe['bb_upperband'] = bollinger['upper']
+
+        for std in self.buy_bbstd.range:
+            bollinger= qtpylib.bollinger_bands(qtpylib.typical_price(dataframe), window=20, stds=std)
+            for band in self.buy_bbband.opt_range:
+                dataframe[f'buybb_{band}band{std}'] = bollinger[band]
+
+        for std in self.sell_bbstd.range:
+            bollinger= qtpylib.bollinger_bands(qtpylib.typical_price(dataframe), window=20, stds=std)
+            for band in self.buy_bbband.opt_range:
+                dataframe[f'sellbb_{band}band{std}'] = bollinger[band]
 
         return dataframe
 
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[
-            (
-                    (dataframe['adx'] > 30) &
-                    (dataframe['tema'] < dataframe['bb_middleband']) &
-                    (dataframe['tema'] > dataframe['tema'].shift(1)) &
-                    (dataframe['sma_200'] > dataframe['close'])
-
-            ),
-            'buy'] = 1
+        conditions=[]
+        conditions.append(dataframe['adx']>self.buy_adx_value.value)
+        conditions.append(dataframe['tema'] < dataframe[f'buybb_{self.buy_bbband.value}band{self.buy_bbstd.value}'])
+        conditions.append(dataframe['tema'] > dataframe['tema'].shift(1))
+        conditions.append(dataframe['sma_200'] > dataframe['close'])
+        if conditions:
+            dataframe.loc[reduce(lambda x,y:x&y,conditions),'buy']=1
         return dataframe
 
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[
-            (
-                    (dataframe['adx'] > 70) &
-                    (dataframe['tema'] > dataframe['bb_middleband']) &
-                    (dataframe['tema'] < dataframe['tema'].shift(1))
-            ),
-            'sell'] = 1
+        conditions=[]
+        conditions.append(dataframe['adx']>self.sell_adx_value.value)
+        conditions.append(dataframe['tema'] > dataframe[f'sellbb_{self.buy_bbband.value}band{self.sell_bbstd.value}'])
+        conditions.append(dataframe['tema'] < dataframe['tema'].shift(1))
+
+        if conditions:
+            dataframe.loc[reduce(lambda x,y:x&y,conditions),'buy']=1
+            
         return dataframe

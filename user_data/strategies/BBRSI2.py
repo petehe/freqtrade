@@ -83,7 +83,7 @@ class BBRSI2(IStrategy):
             bollinger= qtpylib.bollinger_bands(qtpylib.typical_price(dataframe), window=20, stds=std)
             for band in self.buy_bbband.opt_range:
                 dataframe[f'sellbb_{band}band{std}'] = bollinger[band]
-        dataframe.to_csv('bbrsi_ind.csv')
+        # dataframe.to_csv('bbrsi_ind.csv')
         return dataframe
 
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
