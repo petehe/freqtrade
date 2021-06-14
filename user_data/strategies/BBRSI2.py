@@ -25,7 +25,14 @@ class BBRSI2(IStrategy):
     }
 
     # Optimal stoploss designed for the strategy
-    stoploss = -0.38067
+    # Stoploss:
+    stoploss = -0.172
+
+    # Trailing stop:
+    trailing_stop = True
+    trailing_stop_positive = 0.01
+    trailing_stop_positive_offset = 0.011
+    trailing_only_offset_is_reached = True
 
     # Optimal ticker interval for the strategy
     ticker_interval = '1h'
@@ -46,14 +53,14 @@ class BBRSI2(IStrategy):
 
     #define hyperopt parameters
     buy_bbband=CategoricalParameter(['upper','lower','mid'],default='lower',space='buy')
-    sell_bbband=CategoricalParameter(['upper','lower','mid'],default='lower',space='sell')
-
-    buy_bbstd=IntParameter(1,4, default=2,space='buy')
-    sell_bbstd=IntParameter(1,4, default=2,space='sell')
-    buy_rsi_value=IntParameter(5,50, default=30,space='buy')
-    sell_rsi_value=IntParameter(30,100, default=70,space='sell')
+    buy_bbstd=IntParameter(1,4, default=1,space='buy')
     buy_rsi_enabled=CategoricalParameter([True,False],default=True,space='buy')
-    sell_rsi_enabled=CategoricalParameter([True,False],default=True,space='sell')
+    buy_rsi_value=IntParameter(5,50, default=15,space='buy')
+
+    sell_bbband=CategoricalParameter(['upper','lower','mid'],default='lower',space='sell')
+    sell_bbstd=IntParameter(1,4, default=4,space='sell')
+    sell_rsi_enabled=CategoricalParameter([True,False],default=False,space='sell')
+    sell_rsi_value=IntParameter(30,100, default=74,space='sell')
 
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -116,6 +123,6 @@ class BBRSI2(IStrategy):
         conditions.append(dataframe['close']>dataframe[f'sellbb_{self.sell_bbband.value}band{self.sell_bbstd.value}'])
 
         if conditions:
-            dataframe.loc[reduce(lambda x,y:x&y,conditions),'buy']=1
+            dataframe.loc[reduce(lambda x,y:x&y,conditions),'sell']=1
 
         return dataframe
