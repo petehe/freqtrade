@@ -50,31 +50,42 @@ class ADXMomentum(IStrategy):
     buy_adx_enabled=CategoricalParameter([True,False],default=False, space='buy')
     buy_di_enabled=CategoricalParameter([True,False],default=True, space='buy')
     buy_mom_enabled=CategoricalParameter([True,False],default=False, space='buy')
+    buy_adx_tp=IntParameter(10,40,default=14,space='buy')
+    buy_mom_tp=IntParameter(5,30,default=14,space='buy')
 
     sell_adx_value=IntParameter(10,50,default=18,space='sell')
     sell_minus_di_value=IntParameter(10,50,default=43,space='sell')
     sell_adx_enabled=CategoricalParameter([True,False],default=True, space='sell')
     sell_di_enabled=CategoricalParameter([True,False],default=False, space='sell')
     sell_mom_enabled=CategoricalParameter([True,False],default=True, space='sell')
-
+    sell_adx_tp=IntParameter(10,40,default=14,space='sell')
+    sell_mom_tp=IntParameter(5,30,default=14,space='sell')
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe['adx'] = ta.ADX(dataframe, timeperiod=14)
-        dataframe['plus_di'] = ta.PLUS_DI(dataframe, timeperiod=25)
-        dataframe['minus_di'] = ta.MINUS_DI(dataframe, timeperiod=25)
-        dataframe['mom'] = ta.MOM(dataframe, timeperiod=14)
+        for val in self.buy_adx_tp.range:
+            dataframe[f'buy_adx{val}'] = ta.ADX(dataframe, timeperiod=val)
+            dataframe[f'buy_plus_di{val}'] = ta.PLUS_DI(dataframe, timeperiod=val)
+            dataframe[f'buy_minus_di{val}'] = ta.MINUS_DI(dataframe, timeperiod=val)
+        for val in self.buy_mom_tp.range:
+            dataframe[f'buy_mom{val}'] = ta.MOM(dataframe, timeperiod=val)
+        for val in self.sell_adx_tp.range:
+            dataframe[f'sell_adx{val}'] = ta.ADX(dataframe, timeperiod=val)
+            dataframe[f'sell_plus_di{val}'] = ta.PLUS_DI(dataframe, timeperiod=val)
+            dataframe[f'sell_minus_di{val}'] = ta.MINUS_DI(dataframe, timeperiod=val)
+        for val in self.sell_mom_tp.range:
+            dataframe[f'sell_mom{val}'] = ta.MOM(dataframe, timeperiod=val)
 
         return dataframe
 
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions=[]
         if self.buy_adx_enabled.value:
-            conditions.append(dataframe['adx']>self.buy_adx_value.value)
+            conditions.append(dataframe[f'buy_adx{self.buy_adx_tp.value}']>self.buy_adx_value.value)
         if self.buy_di_enabled.value:
-            conditions.append(dataframe['plus_di']>self.buy_plus_di_value.value)
-            conditions.append(dataframe['plus_di'] > dataframe['minus_di'])
+            conditions.append(dataframe[f'buy_plus_di{self.buy_adx_tp.value}']>self.buy_plus_di_value.value)
+            conditions.append(dataframe[f'buy_plus_di{self.buy_adx_tp.value}'] > dataframe[f'buy_minus_di{self.buy_adx_tp.value}'])
         if self.buy_mom_enabled.value:
-            conditions.append(dataframe['mom']>0)
+            conditions.append(dataframe[f'buy_mom{self.buy_mom_tp.value}']>0)
 
         if conditions:
             dataframe.loc[reduce(lambda x,y:x&y,conditions),
@@ -84,12 +95,12 @@ class ADXMomentum(IStrategy):
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions=[]
         if self.sell_adx_enabled.value:
-            conditions.append(dataframe['adx']>self.sell_adx_value.value)
+            conditions.append(dataframe[f'sell_adx{self.sell_adx_tp.value}']>self.sell_adx_value.value)
         if self.sell_di_enabled.value:
-            conditions.append(dataframe['minus_di']>self.sell_minus_di_value.value)
-            conditions.append(dataframe['plus_di'] < dataframe['minus_di'])
+            conditions.append(dataframe[f'sell_minus_di{self.sell_adx_tp.value}']>self.sell_minus_di_value.value)
+            conditions.append(dataframe[f'sell_plus_di{self.sell_adx_tp.value}'] < dataframe[f'sell_minus_di{self.sell_adx_tp.value}'])
         if self.sell_mom_enabled.value:
-            conditions.append(dataframe['mom']<0)
+            conditions.append(dataframe[f'sell_mom{self.sell_mom_tp.value}']<0)
 
         if conditions:
             dataframe.loc[reduce(lambda x,y:x&y,conditions),
