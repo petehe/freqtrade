@@ -45,16 +45,15 @@ class SwingHighToSky(IStrategy):
     trailing_stop_positive_offset = 0.282
     trailing_only_offset_is_reached = False
 
-    buy_cci_TP=IntParameter(50,90, default=60,space='buy')
+    cci_TP=IntParameter(50,90, default=60,space='buy')
+    rsi_TP=IntParameter(20,60, default=58,space='buy')
+
     buy_cci_Value=IntParameter(-200,-100, default=-186,space='buy')
-    buy_rsi_TP=IntParameter(20,60, default=58,space='buy')
     buy_rsi_Value=IntParameter(5,50, default=35,space='buy')
     buy_cci_enabled=CategoricalParameter([True,False],default=True,space='buy')
     buy_rsi_enabled=CategoricalParameter([True,False],default=True,space='buy')
 
-    sell_cci_TP=IntParameter(50,90, default=72,space='sell')
     sell_cci_Value=IntParameter(100,200, default=116,space='sell')
-    sell_rsi_TP=IntParameter(20,60, default=48,space='sell')
     sell_rsi_Value=IntParameter(60,100, default=95,space='sell')
     sell_cci_enabled=CategoricalParameter([True,False],default=True,space='sell')
     sell_rsi_enabled=CategoricalParameter([True,False],default=True,space='sell')
@@ -62,22 +61,18 @@ class SwingHighToSky(IStrategy):
     
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        for val in self.buy_cci_TP.range:
+        for val in self.cci_TP.range:
             dataframe['cci-'+str(val)] = ta.CCI(dataframe, timeperiod=val)
-        for val in self.sell_cci_TP.range:
-            dataframe['cci-'+str(val)] = ta.CCI(dataframe, timeperiod=val)
-        for val in self.buy_rsi_TP.range:
-            dataframe['rsi-'+str(val)] = ta.RSI(dataframe, timeperiod=val)
-        for val in self.sell_rsi_TP.range:
+        for val in self.rsi_TP.range:
             dataframe['rsi-'+str(val)] = ta.RSI(dataframe, timeperiod=val)
         return dataframe
 
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions=[]
         if self.buy_cci_enabled.value:
-            conditions.append(dataframe['cci-'+str(self.buy_cci_TP.value)] <self.buy_cci_Value.value)
+            conditions.append(dataframe['cci-'+str(self.cci_TP.value)] <self.buy_cci_Value.value)
         if self.buy_rsi_enabled.value:
-            conditions.append(dataframe['rsi-'+str(self.buy_rsi_TP.value)]<self.buy_rsi_Value.value)
+            conditions.append(dataframe['rsi-'+str(self.rsi_TP.value)]<self.buy_rsi_Value.value)
        
         if conditions:
             dataframe.loc[reduce(lambda x,y:x&y,conditions),
@@ -88,9 +83,9 @@ class SwingHighToSky(IStrategy):
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions=[]
         if self.sell_cci_enabled.value:
-            conditions.append(dataframe['cci-'+str(self.sell_cci_TP.value)] >self.sell_cci_Value.value)
+            conditions.append(dataframe['cci-'+str(self.cci_TP.value)] >self.sell_cci_Value.value)
         if self.sell_rsi_enabled.value:
-            conditions.append(dataframe['rsi-'+str(self.sell_rsi_TP.value)]>self.sell_rsi_Value.value)
+            conditions.append(dataframe['rsi-'+str(self.rsi_TP.value)]>self.sell_rsi_Value.value)
        
         if conditions:
             dataframe.loc[reduce(lambda x,y:x&y,conditions),
