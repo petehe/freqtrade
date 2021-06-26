@@ -1,0 +1,55 @@
+Current Date and Time is: 2021-06-20 08:25:44
++--------+-----------+----------+------------------+--------------+------------------------------+-----------------+-------------+
+|   Best |     Epoch |   Trades |    Win Draw Loss |   Avg profit |                       Profit |    Avg duration |   Objective |
+|--------+-----------+----------+------------------+--------------+------------------------------+-----------------+-------------|
+| * Best |    2/1000 |      262 |    155    6  101 |       -0.20% |   -0.00514339 BTC  (-10.29%) | 0 days 16:54:00 |     1.19309 |
+| * Best |    5/1000 |      257 |    105   36  116 |       -0.26% |   -0.00665493 BTC  (-13.31%) | 0 days 23:55:00 |      0.8454 |
+| [32m* Best[39m | [32m   7/1000[39m |        [32m1[39m |      [32m1    0    0[39m |      [32m  7.49%[39m | [32m   0.00075000 BTC    (1.50%)[39m | [32m0 days 14:00:00[39m |    [32m-2.55301[39m |
+|   [32mBest[39m | [32m  34/1000[39m |        [32m1[39m |      [32m1    0    0[39m |      [32m  6.40%[39m | [32m   0.00064040 BTC    (1.28%)[39m | [32m0 days 14:00:00[39m |    [32m-2.55301[39m |
+|   [32mBest[39m | [32m  94/1000[39m |        [32m4[39m |      [32m2    2    0[39m |      [32m  1.70%[39m | [32m   0.00068000 BTC    (1.36%)[39m | [32m0 days 19:15:00[39m |    [32m-3.64334[39m |
+|   [32mBest[39m | [32m 348/1000[39m |        [32m3[39m |      [32m2    1    0[39m |      [32m  2.00%[39m | [32m   0.00060000 BTC    (1.20%)[39m | [32m0 days 19:20:00[39m |    [32m-3.64364[39m |
+|   [32mBest[39m | [32m 501/1000[39m |        [32m6[39m |      [32m4    0    2[39m |      [32m  1.37%[39m | [32m   0.00082022 BTC    (1.64%)[39m | [32m1 days 00:00:00[39m |    [32m-3.70393[39m |
+|   [32mBest[39m | [32m 555/1000[39m |        [32m5[39m |      [32m4    1    0[39m |      [32m  4.54%[39m | [32m   0.00227222 BTC    (4.54%)[39m | [32m0 days 18:00:00[39m |    [32m-4.33252[39m |
+
+Best result:
+
+   555/1000:      5 trades. 4/1/0 Wins/Draws/Losses. Avg profit   4.54%. Median profit   5.79%. Total profit  0.00227222 BTC (   4.54Σ%). Avg duration 18:00:00 min. Objective: -4.33252
+
+
+    # Buy hyperspace params:
+    buy_params = {
+        "buy_cci_enabled": True,
+        "buy_cci_value": -127,
+        "buy_cmo_enabled": True,
+        "buy_cmo_value": -80,
+        "buy_mfi_enabled": False,
+        "buy_mfi_value": 37,
+    }
+
+    # Sell hyperspace params:
+    sell_params = {
+        "sell_cci_enabled": False,
+        "sell_cci_value": 114,
+        "sell_cmo_enabled": True,
+        "sell_cmo_value": 72,
+        "sell_mfi_enabled": False,
+        "sell_mfi_value": 80,
+    }
+
+    # ROI table:
+    minimal_roi = {
+        "0": 0.41,
+        "413": 0.212,
+        "1059": 0.058,
+        "1477": 0
+    }
+
+    # Stoploss:
+    stoploss = -0.333
+
+    # Trailing stop:
+    trailing_stop = True
+    trailing_stop_positive = 0.018
+    trailing_stop_positive_offset = 0.098
+    trailing_only_offset_is_reached = False
+    

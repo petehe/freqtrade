@@ -1,0 +1,55 @@
+Current Date and Time is: 2021-06-20 09:19:10
++--------+-----------+----------+------------------+--------------+-------------------------------+-----------------+-------------+
+|   Best |     Epoch |   Trades |    Win Draw Loss |   Avg profit |                        Profit |    Avg duration |   Objective |
+|--------+-----------+----------+------------------+--------------+-------------------------------+-----------------+-------------|
+| * Best |    3/1000 |      124 |     47   40   37 |       -2.14% |     -2659.460 USDT  (-53.19%) | 1 days 01:06:00 |     2.35121 |
+| [32m* Best[39m | [32m   5/1000[39m |      [32m127[39m |     [32m79   30   18[39m |      [32m  4.73%[39m | [32m     6010.043 USDT  (120.20%)[39m | [32m0 days 18:11:00[39m |    [32m-2.90905[39m |
+|   [32mBest[39m | [32m  32/1000[39m |       [32m71[39m |     [32m47   17    7[39m |      [32m  4.87%[39m | [32m     3460.227 USDT   (69.20%)[39m | [32m0 days 09:41:00[39m |    [32m-3.44046[39m |
+|   [32mBest[39m | [32m  53/1000[39m |       [32m51[39m |     [32m26   20    5[39m |      [32m  2.23%[39m | [32m     1140.293 USDT   (22.81%)[39m | [32m0 days 11:12:00[39m |    [32m-3.90794[39m |
+|   [32mBest[39m | [32m  72/1000[39m |      [32m213[39m |    [32m174   22   17[39m |      [32m  4.59%[39m | [32m     9790.016 USDT  (195.80%)[39m | [32m0 days 09:40:00[39m |    [32m-4.06631[39m |
+|   [32mBest[39m | [32m 158/1000[39m |       [32m52[39m |     [32m34   10    8[39m |      [32m  2.93%[39m | [32m     1523.849 USDT   (30.48%)[39m | [32m0 days 10:13:00[39m |    [32m-5.08571[39m |
+|   [32mBest[39m | [32m 475/1000[39m |       [32m50[39m |     [32m35   10    5[39m |      [32m  2.14%[39m | [32m     1069.425 USDT   (21.39%)[39m | [32m0 days 13:48:00[39m |    [32m-5.27273[39m |
+|   [32mBest[39m | [32m 718/1000[39m |       [32m58[39m |     [32m36   14    8[39m |      [32m  1.45%[39m | [32m      840.719 USDT   (16.81%)[39m | [32m0 days 12:22:00[39m |    [32m-5.98505[39m |
+
+Best result:
+
+   718/1000:     58 trades. 36/14/8 Wins/Draws/Losses. Avg profit   1.45%. Median profit   2.30%. Total profit  840.71917800 USDT (  16.81Σ%). Avg duration 12:22:00 min. Objective: -5.98505
+
+
+    # Buy hyperspace params:
+    buy_params = {
+        "buy_cci_enabled": True,
+        "buy_cci_value": -71,
+        "buy_cmo_enabled": True,
+        "buy_cmo_value": -52,
+        "buy_mfi_enabled": True,
+        "buy_mfi_value": 21,
+    }
+
+    # Sell hyperspace params:
+    sell_params = {
+        "sell_cci_enabled": True,
+        "sell_cci_value": 79,
+        "sell_cmo_enabled": True,
+        "sell_cmo_value": 70,
+        "sell_mfi_enabled": True,
+        "sell_mfi_value": 67,
+    }
+
+    # ROI table:
+    minimal_roi = {
+        "0": 0.514,
+        "250": 0.112,
+        "596": 0.023,
+        "805": 0
+    }
+
+    # Stoploss:
+    stoploss = -0.244
+
+    # Trailing stop:
+    trailing_stop = True
+    trailing_stop_positive = 0.235
+    trailing_stop_positive_offset = 0.293
+    trailing_only_offset_is_reached = True
+    

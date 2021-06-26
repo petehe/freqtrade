@@ -27,7 +27,7 @@ class BinHV45(IStrategy):
     stoploss = -0.05
     timeframe = '1m'
 
-    bb_std=IntParameter(1,3,default=2,space='all')
+    bb_std=IntParameter(1,3,default=2,space='buy')
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         for val in self.bb_std.range:

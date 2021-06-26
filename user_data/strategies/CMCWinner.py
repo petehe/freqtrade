@@ -1,5 +1,6 @@
 
 # --- Do not remove these libs ---
+from functools import reduce
 from freqtrade.strategy.hyper import CategoricalParameter, IntParameter
 from freqtrade.strategy.interface import IStrategy
 from pandas import DataFrame
@@ -91,14 +92,23 @@ class CMCWinner(IStrategy):
         #         (dataframe['cmo'].shift(1) < -50)
         #     ),
         #     'buy'] = 1
-        dataframe.loc[
-            (
-                (dataframe['cci'].shift(1) < self.buy_cci_value.value if self.buy_cci_enabled.value else True) &
-                (dataframe['mfi'].shift(1) < self.buy_mfi_value.value if self.buy_mfi_enabled.value else True) &
-                (dataframe['cmo'].shift(1) < self.buy_cmo_value.value if self.buy_cmo.enabled.value else True)
-            ),
-            'buy'] = 1
-
+        # dataframe.loc[
+        #     (
+        #         (dataframe['cci'].shift(1) < self.buy_cci_value.value if self.buy_cci_enabled.value else True) &
+        #         (dataframe['mfi'].shift(1) < self.buy_mfi_value.value if self.buy_mfi_enabled.value else True) &
+        #         (dataframe['cmo'].shift(1) < self.buy_cmo_value.value if self.buy_cmo_enabled.value else True)
+        #     ),
+        #     'buy'] = 1
+        conditions=[]
+        if self.buy_cci_enabled.value:
+            conditions.append(dataframe['cci'].shift(1) < self.buy_cci_value.value)
+        if self.buy_mfi_enabled.value:
+            conditions.append(dataframe['mfi'].shift(1) < self.buy_mfi_value.value)
+        if self.buy_cmo_enabled.value:
+            conditions.append(dataframe['cmo'].shift(1) < self.buy_cmo_value.value)
+        
+        if conditions:
+            dataframe.loc[reduce(lambda x,y: x&y,conditions),'buy']=1
         return dataframe
 
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -107,11 +117,21 @@ class CMCWinner(IStrategy):
         :param dataframe: DataFrame
         :return: DataFrame with buy column
         """
-        dataframe.loc[
-            (
-                (dataframe['cci'].shift(1) > self.sell_cci_value.value if self.sell_cci_enabled.value else True) &
-                (dataframe['mfi'].shift(1) > self.sell_mfi_value.value if self.sell_mfi_enabled.value else True) &
-                (dataframe['cmo'].shift(1) > self.sell_cmo_value.value if self.sell_cmo_enabled.value else True)
-            ),
-            'sell'] = 1
+        # dataframe.loc[
+        #     (
+        #         (dataframe['cci'].shift(1) > self.sell_cci_value.value if self.sell_cci_enabled.value else True) &
+        #         (dataframe['mfi'].shift(1) > self.sell_mfi_value.value if self.sell_mfi_enabled.value else True) &
+        #         (dataframe['cmo'].shift(1) > self.sell_cmo_value.value if self.sell_cmo_enabled.value else True)
+        #     ),
+        #     'sell'] = 1
+        conditions=[]
+        if self.sell_cci_enabled.value:
+            conditions.append(dataframe['cci'].shift(1) > self.sell_cci_value.value)
+        if self.sell_mfi_enabled.value:
+            conditions.append(dataframe['mfi'].shift(1) >self.sell_mfi_value.value)
+        if self.sell_cmo_enabled.value:
+            conditions.append(dataframe['cmo'].shift(1) > self.sell_cmo_value.value)
+        
+        if conditions:
+            dataframe.loc[reduce(lambda x,y: x&y,conditions),'sell']=1
         return dataframe
