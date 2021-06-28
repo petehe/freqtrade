@@ -16,6 +16,8 @@ class ADXMomentum(IStrategy):
     converted from:
 
         https://github.com/sthewissen/Mynt/blob/master/src/Mynt.Core/Strategies/AdxMomentum.cs
+        
+    Made by : Pete He
 
     """
 
