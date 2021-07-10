@@ -50,7 +50,7 @@ class Simple(IStrategy):
     buy_rsi_enabled=CategoricalParameter([True,False],default=True,space='buy')
     buy_rsi_value=IntParameter(30,100, default=70,space='buy')
     sell_rsi_enabled=CategoricalParameter([True,False],default=True,space='sell')
-    sell_rsi_value=IntParameter(30,100, default=70,space='sell')
+    sell_rsi_value=IntParameter(30,100, default=80,space='sell')
     
 
 
@@ -75,12 +75,12 @@ class Simple(IStrategy):
 
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions=[]
-        if self.buy_bb_enabled:
+        if self.buy_bb_enabled.value:
             conditions.append(dataframe['macd']>0)
             conditions.append(dataframe['macd'] > dataframe['macdsignal'])
-        if self.buy_bb_enabled:
+        if self.buy_bb_enabled.value:
             conditions.append(dataframe[f'bb{self.bbwindow.value}upper{self.bbstd.value}'] > dataframe[f'bb{self.bbwindow.value}upper{self.bbstd.value}'].shift(1))
-        if self.buy_rsi_enabled:
+        if self.buy_rsi_enabled.value:
             conditions.append(dataframe[f'rsi{self.rsi_tp.value}']>self.buy_rsi_value.value)
 
         if conditions:
@@ -89,13 +89,19 @@ class Simple(IStrategy):
 
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # different strategy used for sell points, due to be able to duplicate it to 100%
+        # dataframe.loc[
+        #     (
+        #         (dataframe['rsi'] > 80)
+        #     ),
+        #     'sell'] = 1
+        # return dataframe
         conditions=[]
-        if self.sell_bb_enabled:
+        if self.sell_bb_enabled.value:
             conditions.append(dataframe['macd']<0)
             conditions.append(dataframe['macd'] < dataframe['macdsignal'])
-        if self.sell_bb_enabled:
+        if self.sell_bb_enabled.value:
             conditions.append(dataframe[f'bb{self.bbwindow.value}lower{self.bbstd.value}'] < dataframe[f'bb{self.bbwindow.value}lower{self.bbstd.value}'].shift(1))
-        if self.sell_rsi_enabled:
+        if self.sell_rsi_enabled.value:
             conditions.append(dataframe[f'rsi{self.rsi_tp.value}']>self.sell_rsi_value.value)
         if conditions:
             dataframe.loc[reduce(lambda x,y:x&y,conditions),'sell']=1

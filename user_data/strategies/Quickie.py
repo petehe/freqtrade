@@ -41,15 +41,18 @@ class Quickie(IStrategy):
     sell_bbstd=IntParameter(1,4, default=2,space='sell')
     buy_adx_value=IntParameter(20,100, default=30,space='buy')
     sell_adx_value=IntParameter(20,100, default=70,space='sell')
+    tema_value=IntParameter(5,20, default=9,space='buy')
+    sma_value=IntParameter(100,300,default=200, space='buy')
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # macd = ta.MACD(dataframe)
         # dataframe['macd'] = macd['macd']
         # dataframe['macdsignal'] = macd['macdsignal']
         # dataframe['macdhist'] = macd['macdhist']
-
-        dataframe['tema'] = ta.TEMA(dataframe, timeperiod=9)
-        dataframe['sma_200'] = ta.SMA(dataframe, timeperiod=200)
+        for val in self.tema_value.range:
+            dataframe[f'tema{val}'] = ta.TEMA(dataframe, timeperiod=val)
+        for val in self.sma_value.range:
+            dataframe[f'sma{val}'] = ta.SMA(dataframe, timeperiod=val)
         # dataframe['sma_50'] = ta.SMA(dataframe, timeperiod=50)
 
         dataframe['adx'] = ta.ADX(dataframe)
@@ -71,9 +74,9 @@ class Quickie(IStrategy):
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions=[]
         conditions.append(dataframe['adx']>self.buy_adx_value.value)
-        conditions.append(dataframe['tema'] < dataframe[f'buybb_{self.buy_bbband.value}band{self.buy_bbstd.value}'])
-        conditions.append(dataframe['tema'] > dataframe['tema'].shift(1))
-        conditions.append(dataframe['sma_200'] > dataframe['close'])
+        conditions.append(dataframe[f'tema{self.tema_value.value}'] < dataframe[f'buybb_{self.buy_bbband.value}band{self.buy_bbstd.value}'])
+        conditions.append(dataframe[f'tema{self.tema_value.value}'] > dataframe[f'tema{self.tema_value.value}'].shift(1))
+        conditions.append(dataframe[f'sma{self.sma_value.value}'] > dataframe['close'])
         if conditions:
             dataframe.loc[reduce(lambda x,y:x&y,conditions),'buy']=1
         return dataframe
@@ -81,8 +84,8 @@ class Quickie(IStrategy):
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         conditions=[]
         conditions.append(dataframe['adx']>self.sell_adx_value.value)
-        conditions.append(dataframe['tema'] > dataframe[f'sellbb_{self.buy_bbband.value}band{self.sell_bbstd.value}'])
-        conditions.append(dataframe['tema'] < dataframe['tema'].shift(1))
+        conditions.append(dataframe[f'tema{self.tema_value.value}'] > dataframe[f'sellbb_{self.buy_bbband.value}band{self.sell_bbstd.value}'])
+        conditions.append(dataframe[f'tema{self.tema_value.value}'] < dataframe[f'tema{self.tema_value.value}'].shift(1))
 
         if conditions:
             dataframe.loc[reduce(lambda x,y:x&y,conditions),'buy']=1
