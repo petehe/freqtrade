@@ -67,25 +67,26 @@ class AdxSmas(IStrategy):
         return dataframe
 
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[
-            (
-                    (dataframe['adx']>self.buy_adx.value if self.buy_adx_enabled.value else True) &
-                    qtpylib.crossed_above(dataframe[f'buy_ema_short_{self.buy_ema_short.value}'],dataframe[f'buy_ema_long_{self.buy_ema_long.value}'])
-            ),
-            'buy'] = 1
+        conditions=[]
+        conditions.append(qtpylib.crossed_above(dataframe[f'buy_ema_short_{self.buy_ema_short.value}'],dataframe[f'buy_ema_long_{self.buy_ema_long.value}']))
+        if self.buy_adx_enabled.value:
+            conditions.append(dataframe['adx']>self.buy_adx.value)
+        
+        if conditions:
+            dataframe.loc[reduce(lambda x,y:x&y,conditions),
+            'buy']=1
+
         return dataframe
 
-
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe.loc[
-            (
-                    (dataframe['adx']<self.sell_adx.value if self.sell_adx_enabled.value else True) &
-                    (qtpylib.crossed_below(dataframe[f'sell_ema_short_{self.sell_ema_short.value}'],dataframe[f'sell_ema_long_{self.sell_ema_long.value}']))
-            ),
-            'sell'] = 1
-
+        conditions=[]
+        conditions.append(qtpylib.crossed_below(dataframe[f'sell_ema_short_{self.sell_ema_short.value}'],dataframe[f'sell_ema_long_{self.sell_ema_long.value}']))
+        if self.sell_adx_enabled.value:
+            conditions.append(dataframe['adx']<self.sell_adx.value)
         
-
+        if conditions:
+            dataframe.loc[reduce(lambda x,y:x&y,conditions),
+            'sell']=1
 
         return dataframe
 
