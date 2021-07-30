@@ -1,5 +1,6 @@
 # --- Do not remove these libs ---
-from freqtrade.strategy.hyper import IntParameter
+from pandas.core.base import SpecificationError
+from freqtrade.strategy.hyper import DecimalParameter, IntParameter
 from freqtrade.strategy.interface import IStrategy
 from typing import Dict, List
 from functools import reduce
@@ -27,7 +28,10 @@ class BinHV45(IStrategy):
     stoploss = -0.05
     timeframe = '1m'
 
-    bb_std=IntParameter(1,3,default=2,space='buy')
+    bb_std=IntParameter(1,3,default=2,space='sell')
+    pct_bbdelta_close=DecimalParameter(0.002,0.015,default=0.008,space='buy')
+    pct_bbdelta_tail=DecimalParameter(0.1,0.4,default=0.25,space='buy')
+    pct_closedelta_close=DecimalParameter(0.01,0.03,default=0.0175,space='buy')
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         for val in self.bb_std.range:
@@ -54,9 +58,9 @@ class BinHV45(IStrategy):
         dataframe.loc[
             (
                 dataframe[f'lower{self.bb_std.value}'].shift().gt(0) &
-                dataframe[f'bbdelta{self.bb_std.value}'].gt(dataframe['close'] * 0.008) &
-                dataframe['closedelta'].gt(dataframe['close'] * 0.0175) &
-                dataframe['tail'].lt(dataframe[f'bbdelta{self.bb_std.value}'] * 0.25) &
+                dataframe[f'bbdelta{self.bb_std.value}'].gt(dataframe['close'] * self.pct_bbdelta_close.value) &
+                dataframe['closedelta'].gt(dataframe['close'] * self.pct_closedelta_close.value) &
+                dataframe['tail'].lt(dataframe[f'bbdelta{self.bb_std.value}'] * self.pct_bbdelta_tail.value) &
                 dataframe['close'].lt(dataframe[f'lower{self.bb_std.value}'].shift()) &
                 dataframe['close'].le(dataframe['close'].shift())
             ),
