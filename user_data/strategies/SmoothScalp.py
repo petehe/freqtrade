@@ -39,7 +39,6 @@ class SmoothScalp(IStrategy):
 
     both_ema_period = IntParameter(3, 10, default=5, space="buy")
     both_cci_period = IntParameter(10, 30, default=20, space="buy")
-    both_rsi_period = IntParameter(7, 21, default=14, space="buy")
 
     buy_adx_value = IntParameter(20, 40, default=30, space="buy")
     buy_mfi_value = IntParameter(20, 40, default=30, space="buy")
@@ -54,8 +53,8 @@ class SmoothScalp(IStrategy):
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         for val in self.both_ema_period.range:
             dataframe[f"ema_high{val}"] = ta.EMA(dataframe, timeperiod=val, price="high")
-            dataframe[f"ema_close{val}"] = ta.EMA(dataframe, timeperiod=5, price="close")
-            dataframe[f"ema_low{val}"] = ta.EMA(dataframe, timeperiod=5, price="low")
+            dataframe[f"ema_close{val}"] = ta.EMA(dataframe, timeperiod=val, price="close")
+            dataframe[f"ema_low{val}"] = ta.EMA(dataframe, timeperiod=val, price="low")
         stoch_fast = ta.STOCHF(dataframe, 5, 3, 0, 3, 0)
         dataframe["fastd"] = stoch_fast["fastd"]
         dataframe["fastk"] = stoch_fast["fastk"]
